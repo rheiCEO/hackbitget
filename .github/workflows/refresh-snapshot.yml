@@ -1,0 +1,46 @@
+# Odśwież snapshot z API Bitget i przebuduj dane strony
+name: refresh-snapshot
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "bitget_trace/**"
+      - "site/**"
+      - ".github/workflows/refresh-snapshot.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install
+        run: pip install -e .
+
+      - name: Fetch + build site data
+        run: |
+          python -m bitget_trace.cli fetch --out raw
+          python -m bitget_trace.cli build-site --input raw/addresses.json --out site/data/snapshot.json
+
+      - name: Commit snapshot if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add site/data/snapshot.json site/data/analysis.json || true
+          if git diff --staged --quiet; then
+            echo "No snapshot changes"
+          else
+            git commit -m "chore: refresh on-chain snapshot"
+            git push
+          fi

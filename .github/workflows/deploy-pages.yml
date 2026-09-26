@@ -1,0 +1,38 @@
+# Cloudflare Pages — deploy site/ przy pushu do main
+name: deploy-pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      deployments: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python (ensure snapshot exists)
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Build snapshot if missing
+        run: |
+          if [ ! -f site/data/snapshot.json ]; then
+            pip install -e .
+            python -m bitget_trace.cli fetch --out raw
+            python -m bitget_trace.cli build-site --input raw/addresses.json --out site/data/snapshot.json
+          fi
+
+      - name: Publish to Cloudflare Pages
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: hackbitget
+          directory: site
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}

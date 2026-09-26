@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HackBitget — Live Recovery Tracker</title>
+  <meta name="description" content="Independent live tracker for the Bitget September 2026 exploit. Map stolen funds, hops, and freeze targets. Support the official 5% recovery bounty." />
+  <meta name="theme-color" content="#00F0A0" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./styles.css" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230D1117'/%3E%3Cpath d='M8 22 L16 8 L24 22 Z' fill='none' stroke='%2300F0A0' stroke-width='2.5'/%3E%3Ccircle cx='16' cy='18' r='2' fill='%2300F0A0'/%3E%3C/svg%3E" />
+</head>
+<body>
+  <div class="bg-grid" aria-hidden="true"></div>
+  <div class="bg-glow" aria-hidden="true"></div>
+
+  <header class="site-header">
+    <a class="brand" href="/">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <span class="brand-text">Hack<span>Bitget</span></span>
+    </a>
+    <nav class="nav">
+      <a href="#map">Map</a>
+      <a href="#holders">Holders</a>
+      <a href="#network">Network</a>
+      <a href="#bounty">Bounty</a>
+    </nav>
+    <div class="header-actions">
+      <a class="btn btn-ghost" href="https://trace.bgblockchain.xyz/v2#explorer" target="_blank" rel="noopener">Official Trace</a>
+      <a class="btn btn-primary" href="https://trace.bgblockchain.xyz/report" target="_blank" rel="noopener">Report Freeze</a>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <p class="eyebrow">Independent recovery intelligence · Sep 24 2026 exploit</p>
+      <h1>Follow every hop.<br /><span class="accent">Freeze what moves.</span></h1>
+      <p class="lede">
+        Live map of attacker-controlled balances from Bitget’s official address graph —
+        built for hunters chasing the <strong>5% freeze / 5% recovery</strong> bounty.
+      </p>
+      <div class="hero-cta">
+        <a class="btn btn-primary btn-lg" href="https://www.bitget.com/support/articles/12560603896108" target="_blank" rel="noopener">Bounty rules</a>
+        <a class="btn btn-ghost btn-lg" href="#holders">Top wallets</a>
+      </div>
+      <p class="disclaimer">
+        Unofficial community tracker. Data sourced from Bitget public APIs. Not affiliated with Bitget.
+      </p>
+    </section>
+
+    <section class="stats" id="map" aria-label="Cluster totals">
+      <article class="stat-card">
+        <span class="stat-label">Tracked value</span>
+        <span class="stat-value" id="stat-usd">—</span>
+        <span class="stat-sub" id="stat-usd-sub">attacker cluster</span>
+      </article>
+      <article class="stat-card">
+        <span class="stat-label">Addresses</span>
+        <span class="stat-value" id="stat-addrs">—</span>
+        <span class="stat-sub" id="stat-addrs-sub">in graph</span>
+      </article>
+      <article class="stat-card">
+        <span class="stat-label">With balance</span>
+        <span class="stat-value" id="stat-nonzero">—</span>
+        <span class="stat-sub">non-zero USD</span>
+      </article>
+      <article class="stat-card highlight">
+        <span class="stat-label">≥ $1M wallets</span>
+        <span class="stat-value" id="stat-whales">—</span>
+        <span class="stat-sub" id="stat-whales-sub">concentration</span>
+      </article>
+    </section>
+
+    <section class="panel" id="tokens">
+      <div class="panel-head">
+        <h2>Where funds sit now</h2>
+        <p>Token × chain breakdown from the live cluster snapshot.</p>
+      </div>
+      <div class="token-bars" id="token-bars"></div>
+    </section>
+
+    <section class="split">
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Seed wallets</h2>
+          <p>Primary receiving addresses published by Bitget.</p>
+        </div>
+        <div class="seed-list" id="seed-list"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Infrastructure touched</h2>
+          <p>CEX / bridge endpoints already labeled in the official graph.</p>
+        </div>
+        <div class="tag-cloud" id="infra-tags"></div>
+      </div>
+    </section>
+
+    <section class="panel" id="network">
+      <div class="panel-head row">
+        <div>
+          <h2>Hop network</h2>
+          <p>Approximate peel-chain lattice — node size ∝ USD, ring = hop depth.</p>
+        </div>
+        <div class="legend" id="graph-legend"></div>
+      </div>
+      <div class="graph-wrap">
+        <canvas id="network-canvas" width="1200" height="640" aria-label="Fund flow network"></canvas>
+        <div class="graph-tooltip" id="graph-tooltip" hidden></div>
+      </div>
+    </section>
+
+    <section class="panel" id="holders">
+      <div class="panel-head row">
+        <div>
+          <h2>Top holders</h2>
+          <p>Highest remaining balances — primary watch targets for CEX deposits.</p>
+        </div>
+        <input class="search" id="holder-search" type="search" placeholder="Filter address / chain…" />
+      </div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Address</th>
+              <th>USD</th>
+              <th>Hop</th>
+              <th>Chains</th>
+              <th>Balances</th>
+            </tr>
+          </thead>
+          <tbody id="holders-body"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="bounty" id="bounty">
+      <div class="bounty-inner">
+        <p class="eyebrow">Bitget Recovery Bounty Program</p>
+        <h2>5% for freeze. 5% for recovery.</h2>
+        <p>
+          Eligible <em>voluntary</em> actions that directly freeze or recover affected funds.
+          Court / law-enforcement process is excluded. Submit evidence through the official portal.
+        </p>
+        <div class="bounty-actions">
+          <a class="btn btn-primary btn-lg" href="https://trace.bgblockchain.xyz/report" target="_blank" rel="noopener">Submit report</a>
+          <a class="btn btn-ghost btn-lg" href="https://www.bitget.com/support/articles/12560603896108" target="_blank" rel="noopener">Read program terms</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div>
+      <strong>HackBitget</strong>
+      <span>Community tracker · snapshot <time id="snap-time">—</time></span>
+    </div>
+    <div class="footer-links">
+      <a href="https://github.com/" id="github-link">GitHub</a>
+      <a href="https://trace.bgblockchain.xyz/api/addresses" target="_blank" rel="noopener">API</a>
+    </div>
+  </footer>
+
+  <script src="./app.js" type="module"></script>
+</body>
+</html>

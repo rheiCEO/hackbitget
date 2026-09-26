@@ -1,0 +1,20 @@
+[project]
+name = "bitget-trace"
+version = "0.1.0"
+description = "On-chain tracker i alerty dla Bitget Recovery Bounty (hack 2026-09-24)"
+requires-python = ">=3.9"
+dependencies = [
+  "requests>=2.31.0",
+  "python-dotenv>=1.0.0",
+]
+
+[project.scripts]
+bitget-trace = "bitget_trace.cli:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["bitget_trace*"]

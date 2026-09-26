@@ -1,0 +1,25 @@
+# Bitget Trace — lokalne artefakty i sekrety
+.env
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.state/
+.ds_store
+.DS_Store
+*.log
+alerts_state.json
+.wrangler/
+node_modules/
+dist/
+
+# ciężkie surowe dumpy (regeneruj: python -m bitget_trace fetch)
+raw/
+addresses.json
+holdings.json
+api-root.json
+summary.json
+actionable.json
+holders.csv
