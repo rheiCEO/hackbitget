@@ -14,6 +14,7 @@ alerts_state.json
 .wrangler/
 node_modules/
 dist/
+*.egg-info/
 
 # ciężkie surowe dumpy (regeneruj: python -m bitget_trace fetch)
 raw/
